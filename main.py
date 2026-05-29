@@ -9,36 +9,72 @@ def send(msg):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
 
-# TEST DATA (since MCA API access is restricted publicly)
-companies = [
-    {"name": "ABC Technologies Pvt Ltd", "city": "Bangalore", "state": "Karnataka"},
-    {"name": "XYZ Finance Pvt Ltd", "city": "Mysore", "state": "Karnataka"},
-    {"name": "Random Traders", "city": "Mumbai", "state": "Maharashtra"}
-]
+# -----------------------------
+# REAL DATA INGESTION LAYER (SIMULATED API STRUCTURE)
+# In production, replace this with MCA / licensed data provider API
+# -----------------------------
 
-for c in companies:
+def fetch_companies():
+    # This mimics real MCA-style structured response
+    return [
+        {
+            "name": "Infosys Technologies Pvt Ltd",
+            "city": "Bangalore",
+            "state": "Karnataka",
+            "industry": "IT Services"
+        },
+        {
+            "name": "Urban Finance Solutions Pvt Ltd",
+            "city": "Bangalore",
+            "state": "Karnataka",
+            "industry": "Fintech"
+        },
+        {
+            "name": "Sharma Traders",
+            "city": "Delhi",
+            "state": "Delhi",
+            "industry": "Trading"
+        }
+    ]
 
+def score_company(c):
     score = 0
 
     if c["state"] == "Karnataka":
-        score += 40
+        score += 35
 
     if "Bangalore" in c["city"]:
-        score += 30
+        score += 25
 
     if "Pvt" in c["name"]:
-        score += 20
+        score += 10
 
-    if score >= 60:
-        msg = f"""
-🏦 NEW BANK LEAD
+    if c["industry"] in ["Fintech", "IT Services"]:
+        score += 25
+
+    return score
+
+companies = fetch_companies()
+
+for c in companies:
+    score = score_company(c)
+
+    if score < 60:
+        continue
+
+    msg = f"""
+🏦 BANK CRM v2 LEAD
 
 🏢 {c['name']}
 📍 {c['city']}, {c['state']}
+🏭 Industry: {c['industry']}
 
 ⭐ Score: {score}/100
 ⏱ {datetime.now()}
-"""
-        send(msg)
 
-send("✅ CRM RUN COMPLETED")
+Source: MCA-style Registry Layer
+"""
+
+    send(msg)
+
+send("✅ CRM v2 RUN COMPLETED")
