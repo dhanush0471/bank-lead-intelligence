@@ -5,76 +5,104 @@ from datetime import datetime
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 
+# -----------------------------
+# TELEGRAM SENDER
+# -----------------------------
 def send(msg):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
 
-# -----------------------------
-# REAL DATA INGESTION LAYER (SIMULATED API STRUCTURE)
-# In production, replace this with MCA / licensed data provider API
-# -----------------------------
 
+# -----------------------------
+# SIMULATED REAL DATA LAYER
+# (Replace later with MCA / paid APIs)
+# -----------------------------
 def fetch_companies():
-    # This mimics real MCA-style structured response
     return [
         {
             "name": "Infosys Technologies Pvt Ltd",
             "city": "Bangalore",
             "state": "Karnataka",
-            "industry": "IT Services"
+            "industry": "IT Services",
+            "turnover_est": 500
         },
         {
-            "name": "Urban Finance Solutions Pvt Ltd",
+            "name": "Urban Pay Fintech Pvt Ltd",
             "city": "Bangalore",
             "state": "Karnataka",
-            "industry": "Fintech"
+            "industry": "Fintech",
+            "turnover_est": 80
         },
         {
-            "name": "Sharma Traders",
-            "city": "Delhi",
-            "state": "Delhi",
-            "industry": "Trading"
+            "name": "Small Retail Shop",
+            "city": "Mysore",
+            "state": "Karnataka",
+            "industry": "Retail",
+            "turnover_est": 10
         }
     ]
 
-def score_company(c):
+
+# -----------------------------
+# AI-STYLE SCORING ENGINE
+# -----------------------------
+def score_lead(c):
     score = 0
 
+    # Location priority
     if c["state"] == "Karnataka":
-        score += 35
-
-    if "Bangalore" in c["city"]:
+        score += 20
+    if c["city"] == "Bangalore":
         score += 25
 
-    if "Pvt" in c["name"]:
-        score += 10
-
+    # Business type
     if c["industry"] in ["Fintech", "IT Services"]:
         score += 25
+    if c["industry"] == "Retail":
+        score += 10
+
+    # Turnover intelligence
+    if c["turnover_est"] > 100:
+        score += 30
+    elif c["turnover_est"] > 50:
+        score += 15
 
     return score
 
+
+# -----------------------------
+# LEAD QUALITY FILTER
+# -----------------------------
+def is_hot_lead(score):
+    return score >= 60
+
+
+# -----------------------------
+# MAIN PIPELINE
+# -----------------------------
 companies = fetch_companies()
 
 for c in companies:
-    score = score_company(c)
 
-    if score < 60:
+    score = score_lead(c)
+
+    if not is_hot_lead(score):
         continue
 
     msg = f"""
-🏦 BANK CRM v2 LEAD
+🏦 CRM v3 - HOT BANKING LEAD
 
 🏢 {c['name']}
 📍 {c['city']}, {c['state']}
 🏭 Industry: {c['industry']}
+💰 Est. Turnover: {c['turnover_est']} Cr
 
-⭐ Score: {score}/100
+🔥 Credit Score: {score}/100
+🎯 Status: HOT LEAD
+
 ⏱ {datetime.now()}
-
-Source: MCA-style Registry Layer
 """
 
     send(msg)
 
-send("✅ CRM v2 RUN COMPLETED")
+send("✅ CRM v3 EXECUTION COMPLETE")
