@@ -24,57 +24,74 @@ def fetch_companies():
             "city": "Bangalore",
             "state": "Karnataka",
             "industry": "IT Services",
-            "turnover_est": 500
+            "turnover": 500
         },
         {
             "name": "Urban Pay Fintech Pvt Ltd",
             "city": "Bangalore",
             "state": "Karnataka",
             "industry": "Fintech",
-            "turnover_est": 80
+            "turnover": 80
         },
         {
             "name": "Small Retail Shop",
             "city": "Mysore",
             "state": "Karnataka",
             "industry": "Retail",
-            "turnover_est": 10
+            "turnover": 10
         }
     ]
 
 
 # -----------------------------
-# AI-STYLE SCORING ENGINE
+# SMART SCORING ENGINE (CRM v2)
 # -----------------------------
 def score_lead(c):
+
     score = 0
 
-    # Location priority
+    name = c["name"].lower()
+
+    # ❌ filter junk/system noise
+    junk_words = ["search", "messages", "english", "login", "menu"]
+    if any(j in name for j in junk_words):
+        return 0
+
+    # 📍 location boost
     if c["state"] == "Karnataka":
-        score += 20
+        score += 25
+
     if c["city"] == "Bangalore":
         score += 25
 
-    # Business type
-    if c["industry"] in ["Fintech", "IT Services"]:
-        score += 25
-    if c["industry"] == "Retail":
-        score += 10
+    # 🏦 industry intelligence
+    industry = c.get("industry", "").lower()
 
-    # Turnover intelligence
-    if c["turnover_est"] > 100:
+    if "fintech" in industry:
         score += 30
-    elif c["turnover_est"] > 50:
+    elif "finance" in industry:
+        score += 20
+    elif "it" in industry:
         score += 15
+
+    # 💰 turnover scoring
+    t = c.get("turnover", 0)
+
+    if t > 500:
+        score += 30
+    elif t > 100:
+        score += 20
+    elif t > 50:
+        score += 10
 
     return score
 
 
 # -----------------------------
-# LEAD QUALITY FILTER
+# LEAD QUALITY FILTER (STRICT)
 # -----------------------------
-def is_hot_lead(score):
-    return score >= 60
+def is_high_value_lead(score):
+    return score >= 75
 
 
 # -----------------------------
@@ -82,27 +99,31 @@ def is_hot_lead(score):
 # -----------------------------
 companies = fetch_companies()
 
+sent = 0
+
 for c in companies:
 
     score = score_lead(c)
 
-    if not is_hot_lead(score):
+    if not is_high_value_lead(score):
         continue
 
     msg = f"""
-🏦 CRM v3 - HOT BANKING LEAD
+🏦 BANK CRM v2 LEAD
 
 🏢 {c['name']}
 📍 {c['city']}, {c['state']}
-🏭 Industry: {c['industry']}
-💰 Est. Turnover: {c['turnover_est']} Cr
+🏭 {c.get('industry','Unknown')}
 
-🔥 Credit Score: {score}/100
-🎯 Status: HOT LEAD
+💰 Turnover: {c.get('turnover','N/A')} Cr
+🔥 Score: {score}/100
+
+🎯 Status: HIGH VALUE LEAD
 
 ⏱ {datetime.now()}
 """
 
     send(msg)
+    sent += 1
 
-send("✅ CRM v3 EXECUTION COMPLETE")
+send(f"✅ CRM v2 EXECUTION COMPLETE | LEADS SENT: {sent}")
